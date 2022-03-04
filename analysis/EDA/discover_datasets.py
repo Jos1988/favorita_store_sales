@@ -1,0 +1,47 @@
+import pandas as pd
+
+from definitions import HOLIDAY_EVENTS_FILE, OIL_FILE, STORES_FILE, TEST_FILE, TRAIN_FILE, TRANSACTIONS_FILE
+
+
+def describe_dataset(df: pd.DataFrame):
+    print(df.columns)
+    print(f'length {len(df)}')
+    print(df.describe())
+
+
+print('# loading train data...')
+train_df = pd.read_csv(TRAIN_FILE)
+describe_dataset(train_df)
+print('')
+print('')
+print('')
+print('# loading test data...')
+test_df = pd.read_csv(TEST_FILE)
+describe_dataset(test_df)
+print('')
+print('')
+print('')
+print('# loading holiday data...')
+holiday_df = pd.read_csv(HOLIDAY_EVENTS_FILE)
+describe_dataset(holiday_df)
+print('')
+print('')
+print('')
+print('# loading oil data...')
+oil_df = pd.read_csv(OIL_FILE)
+describe_dataset(oil_df)
+print('')
+print('')
+print('')
+print('# loading stores data...')
+stores_df = pd.read_csv(STORES_FILE)
+describe_dataset(stores_df)
+print('')
+print('')
+print('')
+print('# loading transactions data...')
+transactions_df = pd.read_csv(TRANSACTIONS_FILE)
+describe_dataset(transactions_df)
+print('')
+print('')
+print('')
