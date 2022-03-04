@@ -1,7 +1,31 @@
 # Store Sales - Time Series Forecasting
-## Use machine learning to predict grocery sales
+Personal side project for working with time series data.
+
+## Getting started
+### 1. Get the data
+Download the project data files to the `/data` folder. Either manually from the [Kaggle](https://www.kaggle.com/c/store-sales-time-series-forecasting/data) website or using the Kaggle API: `kaggle competitions download -c store-sales-time-series-forecasting`.
+
+### 2. Install dependencies
+Install dependencies from `/requirements.txt` (generate using `pip freeze`) or install manually as needed.
+
+### 3. Prepare data
+todo: integrate this step in scripts.
+
+Run `data_prep/join_data.py` to create the required datasets. 
+
+### 4. Add src
+Add the `/src` folder to your python path (in Pycharm right click on folder > Mark Directory as > Source Root)
+
+### 5. Run code
+Run scripts from following folders:
+- `/analysis/EDA` (exploratory data analysis)
+- `/analysis/timeseries` (analysing the data as a time series)
+- `/forecasting` (various forecasting methods)
+
+## Kaggle description: Use machine learning to predict grocery sales
 
 > link: https://www.kaggle.com/c/store-sales-time-series-forecasting
+> 
 > Kaggle API ref: store-sales-time-series-forecasting
 
 ### Goal of the Competition
