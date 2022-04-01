@@ -9,5 +9,5 @@ STORES_FILE = DATA_FOLDER + '/stores.csv'
 TEST_FILE = DATA_FOLDER + '/test.csv'
 TRAIN_FILE = DATA_FOLDER + '/train.csv'
 TRANSACTIONS_FILE = DATA_FOLDER + '/transactions2.csv'
-
+GEO_FOLDER = DATA_FOLDER + '/geo'
 CACHE_FOLDER = ROOT + '/cache'
