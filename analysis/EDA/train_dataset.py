@@ -1,55 +1,87 @@
+import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from definitions import TRAIN_FILE
-from EDA.analysis import describe_dataset, check_dates
 
 
 print('Loading train data...')
 train_df = pd.read_csv(TRAIN_FILE)
-describe_dataset(train_df)
-print('Each row represents the daily sales of one product type in one store.')
-print()
+train_df['date'] = pd.to_datetime(train_df['date'])
+train_df['store_nbr'] = train_df['store_nbr'].astype('category')
 
-print(f"Ids range from {min(train_df['id'])} to {max(train_df['id'])}")
+# remove outliers.
+train_df['sales'] = train_df['sales'].clip(upper=2500)
+train_df['onpromotion'] = train_df['onpromotion'].clip(upper=2500)
 
-print()
-dates_freqs = train_df['date'].value_counts()
-print(f'Each date occurs {set(dates_freqs.values)} times')
-print(f"has nans: {train_df['date'].hasnans}")
+# data_by_store = []
+# for store_nbr, store_df in train_df[['date', 'store_nbr', 'sales', 'onpromotion']].groupby('store_nbr'):
+#     store_df = store_df.groupby('date').sum()
+#     store_df = store_df[['sales', 'onpromotion']].rename(columns={'sales': 'sales_' + str(store_nbr), 'onpromotion': 'onpromotion_' + str(store_nbr)})
+#     data_by_store.append(store_df)
+#
+# grouped_by_store = pd.concat(data_by_store, axis=1)
+# grouped_by_store[grouped_by_store < 1] = np.NAN
+#
+# # correlate onpromotion and sales per product family, try shifted.
+# # filter dates after august 2014 as no promotions where recorded before mid 2014.
+# promo_sales = grouped_by_store.loc[grouped_by_store.index > '2014-08-01']
+# # drop columns with a lot of missing data, these are stores that weren't open during the the full period.
+# na_thresh = len(promo_sales) * 0.9
+# promo_sales = promo_sales.dropna(thresh=na_thresh, axis=1)
+#
+# for shift_n in range(0, 31):
+#     promo_sales_correlation_results = []
+#     for column_name in promo_sales.columns:
+#         column_type, store_nbr = column_name.split('_')
+#         if column_type == 'onpromotion':
+#             continue
+#
+#         # Shift sales figures n days into the future.
+#         shifted_sales = promo_sales[column_name].shift(shift_n)[shift_n:]
+#         # cut promo figure to size of shifted sales figures.
+#         cut_promo = promo_sales[shift_n:]['onpromotion_' + store_nbr]
+#         # correlate current promo figures with future sales figures.
+#         promo_sales_correlation = shifted_sales.corr(cut_promo)
+#         # print(f'correlation for store {store_nbr: >3} is {promo_sales_correlation:>5.2f}') # uncomment to see every result.
+#         promo_sales_correlation_results.append(promo_sales_correlation)
+#
+#     print(f'average_correlation: {sum(promo_sales_correlation_results)/len(promo_sales_correlation_results):.2f} (shifted {shift_n})')
 
-print()
-check_dates(train_df['date'])
 
-print()
-print(f"There are {len(train_df['store_nbr'].unique())} store numbers")
-store_freqs = train_df['store_nbr'].value_counts()
-print(store_freqs.keys().sort_values())
-print(f'Each store nbr occurs {set(store_freqs.values)} times')
-print(f"has nans: {train_df['store_nbr'].hasnans}")
+data_by_store = []
+for store_nbr, store_df in train_df[['date', 'family', 'sales', 'onpromotion']].groupby('family'):
+    raw = store_df
+    store_df = store_df.groupby('date').sum()
+    store_df = store_df[['sales', 'onpromotion']].rename(columns={'sales': 'sales_' + str(store_nbr), 'onpromotion': 'onpromotion_' + str(store_nbr)})
+    data_by_store.append(store_df)
 
-print()
-print(f"There are {len(train_df['family'].unique())} product families")
-family_freqs = train_df['family'].value_counts()
-print(family_freqs.keys().sort_values())
-print(f'Each family occurs {set(family_freqs.values)} times')
-print(f"has nans: {train_df['family'].hasnans}")
+grouped_by_store = pd.concat(data_by_store, axis=1)
+grouped_by_store[grouped_by_store < 1] = np.NAN
 
-print()
-print(F"on promotion ranges from {train_df['onpromotion'].min()} to {train_df['onpromotion'].max()} with {len(train_df['onpromotion'].unique())} unique values.")
-print(f"The lowest values occur most (top 5 %)L")
-print(train_df['onpromotion'].value_counts(normalize=True)[:5] * 100)
-train_df['onpromotion'].hist(bins=100)
-plt.title('on promotion value freqs')
-plt.show()
-print(f"has nans: {train_df['onpromotion'].hasnans}")
+# correlate onpromotion and sales per product family, try shifted.
+# filter dates after august 2014 as no promotions where recorded before mid 2014.
+promo_sales = grouped_by_store.loc[grouped_by_store.index > '2014-08-01']
+# drop columns with a lot of missing data, these are stores that weren't open during the full period.
+# na_thresh = len(promo_sales) * 0.9
+# promo_sales = promo_sales.dropna(thresh=na_thresh, axis=1)
+promo_sales = promo_sales.fillna(0)
 
-print()
-print(F"Sales ranges from {train_df['sales'].min()} to {train_df['sales'].max()} with {len(train_df['sales'].unique())} unique values.")
-print(f"The lowest values occur most (top 5 %)L")
-print(train_df['sales'].value_counts(normalize=True)[:5] * 100)
-train_df['sales'].hist(bins=100)
-plt.title('sales value freqs')
-plt.show()
-print(f"has nans: {train_df['sales'].hasnans}")
+for shift_n in range(0, 31):
+    promo_sales_correlation_results = []
+    for column_name in promo_sales.columns:
+        column_type, store_nbr = column_name.split('_')
+        if column_type == 'onpromotion':
+            continue
 
+        # Shift sales figures n days into the future.
+        shifted_sales = promo_sales[column_name].shift(shift_n)[shift_n:]
+        # cut promo figure to size of shifted sales figures.
+        cut_promo = promo_sales[shift_n:]['onpromotion_' + store_nbr]
+        # correlate current promo figures with future sales figures.
+        promo_sales_correlation = shifted_sales.corr(cut_promo)
+        if np.isnan(promo_sales_correlation):
+            continue
+        # print(f'correlation for store {store_nbr: >3} is {promo_sales_correlation:>5.2f}') # uncomment to see every result.
+        promo_sales_correlation_results.append(abs(promo_sales_correlation))
+
+    print(f'average_correlation: {sum(promo_sales_correlation_results)/len(promo_sales_correlation_results):.2f} (shifted {shift_n})')
